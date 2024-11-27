@@ -34,24 +34,24 @@ export default function Page() {
     }
   };
 
-const addTodo = async () => {
+  const addTodo = async () => {
     if (!newTask.trim()) return;
-  
+
     try {
       const { data, error } = await supabase
         .from('todos')
         .insert([{ task: newTask }])
         .select('*');
-  
+
       if (error) throw error;
-  
+
       setTodos((prev) => [...prev, ...(data || [])]);
       setNewTask('');
     } catch (error) {
       console.error('Error adding todo:', error);
     }
   };
-  
+
   const resetTable = async () => {
     setLoading(true);
     try {
@@ -69,6 +69,26 @@ const addTodo = async () => {
       console.error('Error resetting table:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleComplete = async (id: string, currentState: boolean) => {
+    try {
+      const { data, error } = await supabase
+        .from('todos')
+        .update({ is_complete: !currentState })
+        .eq('id', id)
+        .select('*');
+
+      if (error) throw error;
+
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo.id === id ? { ...todo, is_complete: !currentState } : todo
+        )
+      );
+    } catch (error) {
+      console.error('Error updating todo:', error);
     }
   };
 
@@ -90,6 +110,9 @@ const addTodo = async () => {
         {todos.map((todo) => (
           <li key={todo.id}>
             {todo.task} {todo.is_complete ? '✅' : ''}
+            <button onClick={() => toggleComplete(todo.id, todo.is_complete)}>
+              Mark as {todo.is_complete ? 'Incomplete' : 'Complete'}
+            </button>
           </li>
         ))}
       </ul>
