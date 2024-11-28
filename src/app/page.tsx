@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
 import styles from '../styles/Home.module.css';
 
@@ -12,6 +13,7 @@ interface Todo {
 }
 
 export default function Page() {
+  const router = useRouter();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTask, setNewTask] = useState('');
   const [loading, setLoading] = useState(false);
@@ -115,11 +117,18 @@ export default function Page() {
       </div>
       <ul className={styles.list}>
         {todos.map((todo) => (
-          <li key={todo.id} className={styles.listItem}>
+          <li
+            key={todo.id}
+            className={styles.listItem}
+            onClick={() => router.push(`../edit/${todo.id}`)}
+          >
             {todo.task} {todo.is_complete ? '✅' : ''}
             <button
               className={styles.listItemButton}
-              onClick={() => toggleComplete(todo.id, todo.is_complete)}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleComplete(todo.id, todo.is_complete);
+              }}
             >
               Mark as {todo.is_complete ? 'Incomplete' : 'Complete'}
             </button>
