@@ -1,24 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../../lib/supabaseClient';
 import styles from '../../styles/Home.module.css';
 
 export default function EditPage() {
   const router = useRouter();
-  const { id } = router.query as { id: string }; // Explicitly type `id` as string
+  const { id } = router.query as { id: string };
   const [task, setTask] = useState('');
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      fetchTask();
-    }
-  }, [id]);
-
-  const fetchTask = async () => {
+  const fetchTask = useCallback(async () => {
+    if (!id) return;
     try {
       const { data, error } = await supabase
         .from('todos')
@@ -31,7 +26,11 @@ export default function EditPage() {
     } catch (error) {
       console.error('Error fetching task:', error);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchTask();
+  }, [fetchTask]);
 
   const updateTask = async () => {
     if (!task.trim()) return;
@@ -39,7 +38,7 @@ export default function EditPage() {
     try {
       const { error } = await supabase.from('todos').update({ task }).eq('id', id);
       if (error) throw error;
-      router.push('/'); // Redirect to the main page
+      router.push('/');
     } catch (error) {
       console.error('Error updating task:', error);
     } finally {
@@ -48,12 +47,12 @@ export default function EditPage() {
   };
 
   const deleteTask = async () => {
-    if (!confirm('Are you sure you want to delete this task?')) return; // Optional confirmation dialog
+    if (!confirm('Are you sure you want to delete this task?')) return;
     setDeleting(true);
     try {
       const { error } = await supabase.from('todos').delete().eq('id', id);
       if (error) throw error;
-      router.push('/'); // Redirect to the main page after deletion
+      router.push('/');
     } catch (error) {
       console.error('Error deleting task:', error);
     } finally {
