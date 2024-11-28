@@ -74,7 +74,7 @@ export default function Page() {
 
   const toggleComplete = async (id: string, currentState: boolean) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('todos')
         .update({ is_complete: !currentState })
         .eq('id', id)
@@ -94,23 +94,33 @@ export default function Page() {
 
   return (
     <div className={styles.container}>
-      <h1>Todo App</h1>
-      <button onClick={resetTable} disabled={loading}>
+      <h1 className={styles.heading}>Todo App</h1>
+      <button
+        className={`${styles.button} ${styles.resetButton}`}
+        onClick={resetTable}
+        disabled={loading}
+      >
         {loading ? 'Resetting...' : 'Reset Table'}
       </button>
-      <div>
+      <div className={styles.taskInput}>
         <input
+          className={styles.input}
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
           placeholder="Enter a task"
         />
-        <button onClick={addTodo}>Add Task</button>
+        <button className={styles.button} onClick={addTodo}>
+          Add Task
+        </button>
       </div>
-      <ul>
+      <ul className={styles.list}>
         {todos.map((todo) => (
-          <li key={todo.id}>
+          <li key={todo.id} className={styles.listItem}>
             {todo.task} {todo.is_complete ? '✅' : ''}
-            <button onClick={() => toggleComplete(todo.id, todo.is_complete)}>
+            <button
+              className={styles.listItemButton}
+              onClick={() => toggleComplete(todo.id, todo.is_complete)}
+            >
               Mark as {todo.is_complete ? 'Incomplete' : 'Complete'}
             </button>
           </li>
