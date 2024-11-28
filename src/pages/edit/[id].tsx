@@ -10,6 +10,7 @@ export default function EditPage() {
   const { id } = router.query as { id: string }; // Explicitly type `id` as string
   const [task, setTask] = useState('');
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -46,6 +47,20 @@ export default function EditPage() {
     }
   };
 
+  const deleteTask = async () => {
+    if (!confirm('Are you sure you want to delete this task?')) return; // Optional confirmation dialog
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('todos').delete().eq('id', id);
+      if (error) throw error;
+      router.push('/'); // Redirect to the main page after deletion
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Edit Task</h1>
@@ -62,6 +77,9 @@ export default function EditPage() {
         </button>
         <button onClick={() => router.push('/')} className={styles.button}>
           Cancel
+        </button>
+        <button onClick={deleteTask} className={styles.button} disabled={deleting}>
+          {deleting ? 'Deleting...' : 'Delete'}
         </button>
       </div>
     </div>
